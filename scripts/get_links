@@ -1,0 +1,40 @@
+#!/bin/sh
+curl -s 'https://www.busevi.com/wp-admin/admin-ajax.php' --compressed \
+	-X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0' \
+	-H 'Accept: text/html, */*; q=0.01' \
+	-H 'Accept-Language: en-US,en;q=0.5' \
+	-H 'Accept-Encoding: gzip, deflate' \
+	-H 'Referer: https://www.busevi.com/' \
+	-H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+	-H 'X-Requested-With: XMLHttpRequest' \
+	-H 'Origin: https://www.busevi.com' \
+	-H 'DNT: 1' \
+	-H 'Connection: keep-alive' \
+	-H 'Sec-Fetch-Dest: empty' \
+	-H 'Sec-Fetch-Mode: cors' \
+	-H 'Sec-Fetch-Site: same-origin' \
+	-H 'Pragma: no-cache' \
+	-H 'Cache-Control: no-cache' \
+	-H 'TE: trailers' \
+	--data-raw 'action=vc_get_vc_grid_data&vc_action=vc_get_vc_grid_data&tag=vc_basic_grid&data%5Bvisible_pages%5D=5&data%5Bpage_id%5D=65615&data%5Bstyle%5D=lazy&data%5Baction%5D=vc_get_vc_grid_data&data%5Bshortcode_id%5D=1703688768425-fa01e0d0-edc3-6&data%5Bitems_per_page%5D=80&data%5Btag%5D=vc_basic_grid&vc_post_id=65615&_vcnonce=d15620e41c'
+
+curl -s 'https://www.busevi.com/wp-admin/admin-ajax.php' \
+	--compressed \
+	-X POST \
+	-H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0' \
+	-H 'Accept: text/html, */*; q=0.01' \
+	-H 'Accept-Language: en-US,en;q=0.5' \
+	-H 'Accept-Encoding: gzip, deflate, br' \
+	-H 'Referer: https://www.busevi.com/gradski-prevoz-beograd-tramvajske-linije-brojevi-linija/' \
+	-H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+	-H 'X-Requested-With: XMLHttpRequest' \
+	-H 'Origin: https://www.busevi.com' \
+	-H 'DNT: 1' \
+	-H 'Connection: keep-alive' \
+	-H 'Sec-Fetch-Dest: empty' \
+	-H 'Sec-Fetch-Mode: cors' \
+	-H 'Sec-Fetch-Site: same-origin' \
+	-H 'Pragma: no-cache' \
+	-H 'Cache-Control: no-cache' \
+	-H 'TE: trailers' \
+	--data-raw 'action=vc_get_vc_grid_data&vc_action=vc_get_vc_grid_data&tag=vc_basic_grid&data%5Bvisible_pages%5D=5&data%5Bpage_id%5D=65711&data%5Bstyle%5D=all&data%5Baction%5D=vc_get_vc_grid_data&data%5Bshortcode_id%5D=1700841327151-43306baf-a29d-3&data%5Btag%5D=vc_basic_grid&vc_post_id=65711&_vcnonce=d15620e41c'

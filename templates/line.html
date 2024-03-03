@@ -1,0 +1,82 @@
+{{define "style"}}
+	<style>
+	table > thead {
+		position: sticky;
+		top: 0;
+	}
+
+	table thead th {
+		background-clip: padding-box;
+	}
+	details > table {
+		background-color: var(--bg);
+		width: 100%;
+	}
+	</style>
+{{- end}}
+{{define "content" -}}
+	<h2 style="margin-bottom:0">{{.Id}}</h2>
+	<h3 style="margin-top:0">{{index .Places 0}}{{range slice .Places 1}} → {{.}} {{end}}</h3>
+	{{- range .Routes}}
+	<h2>{{.Tag}}→</h2>
+	<table>
+		<caption>
+		{{.Tag}}
+		<p style="margin: 0; text-align: left;">Prvi sledeći polasci:</p>
+		</caption>
+		{{/* <h5 style="margin-bottom: 0;">{{.Tag}}→</h5> */}}
+		{{/* <h6 style="margin-bottom: 0; text-align: left;">Prvi sledeći polasci:</h6> */}}
+		{{/* </caption> */}}
+		<thead style="">
+			<tr>
+				<th>Sat</th>
+				<th>Radni dan</th>
+				<th>Sub</th>
+				<th>Ned</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{- range .Timetable.FirstNextDepartures}}
+			<tr>
+				<td>{{printf "%.2d" .H}}</td>
+				<td>{{range .Wd}} {{printf "%.2d" .}}{{end}}</td>
+				<td>{{range .Sat}} {{printf "%.2d" .}}{{end}}</td>
+				<td>{{range .Sun}} {{printf "%.2d" .}}{{end}}</td>
+			</tr>
+		{{- end}}
+		</tbody>
+	</table>
+	<details>
+	<summary>Kompletan red vožnje</summary>
+	<table>
+		<caption>{{.Tag}}</caption>
+		<thead style="">
+			<tr>
+				<th>Sat</th>
+				<th>Radni dan</th>
+				<th>Sub</th>
+				<th>Ned</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{- range .Timetable}}
+			<tr>
+				<td>{{printf "%.2d" .H}}</td>
+				<td>{{range .Wd}} {{printf "%.2d" .}}{{end}}</td>
+				<td>{{range .Sat}} {{printf "%.2d" .}}{{end}}</td>
+				<td>{{range .Sun}} {{printf "%.2d" .}}{{end}}</td>
+			</tr>
+		{{- end}}
+		</tbody>
+	</table>
+	</details>
+	<details>
+	<summary>Stanice</summary>
+	<ol>
+		{{- range .Stops}}
+		<li>{{.Zone}} {{.Id}} {{.Name}}</li>
+		{{- end}}
+	</ol>
+	</details>
+	{{- end -}}
+{{- end}}

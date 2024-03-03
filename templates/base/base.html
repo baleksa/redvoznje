@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html lang="sr-Latn-RS">
+<head>
+	<title>{{block "title" . -}}Red vožnje{{- end}}</title>
+	<link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+	<style>
+	/* Light theme tweaks */
+	:root, ::backdrop {
+		--bg: #FFFBEF;
+		--accent-bg: #FFEEBC;
+		--text: #454545;
+		--border: #5F5F5F;
+
+	}
+	details > table {
+		--accent-bg: #FFF5D6;
+	}
+
+	/* Dark theme tweaks */
+	@media (prefers-color-scheme: dark) {
+		:root, ::backdrop {
+			color-scheme: dark;
+			--bg: #2B3339;
+			--accent-bg: #364048;
+			--text: #D3C6AA;
+		}
+		details > table {
+			background-color: var(--bg);
+			--accent-bg: #414D56;
+		}
+	}
+	</style>
+	{{block "style" .}} {{end}}
+</head>
+
+<body>
+	<header>
+		{{block "nav" .}}
+		<nav>
+			<a href="/">Sve linije</a>
+		</nav>
+		{{end}}
+		<h1>Red vožnje</h1>
+		{{block "header" .}}{{end}}
+	</header>
+	{{block "content" .}}{{end}}
+	{{block "footer" .}}<footer></footer>{{end}}
+</body>
+
+{{block "js" .}}{{end}}
+
+</html>

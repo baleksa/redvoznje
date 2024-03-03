@@ -1,0 +1,36 @@
+{{define "style"}}
+	<style>
+	ul {
+		margin: 0 auto;
+		text-align: center;
+	}
+
+	li {
+		font-size: 2em;
+		display: inline-block;
+		vertical-align: top;
+	}
+	</style>
+{{end}}
+{{define "nav"}}
+		<nav>
+			<a href="/" class="current">Sve linije</a>
+		</nav>
+{{end}}
+{{define "content"}}
+	<p>
+	<search>
+		<form action="/search">
+			<input type="search" id="line" name="q" placeholder="npr. 23"/>
+			<button type="submit">Pretraži</button>
+		</form>
+	</search>
+	</p>
+	<p>
+	<ul>
+	{{range .}}
+		<li><a class="button" href="/line?id={{.}}">{{.}}</a></li>
+	{{end}}
+	</ul>
+	</p>
+{{end}}
