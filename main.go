@@ -61,14 +61,14 @@ func run(args []string) error {
 		}
 		val, ok := lineCache.get(id)
 		if !ok {
-			v, err := scrapeBusLine(publicTransportLinesLinks[id])
+			v, err := scrapeLine(publicTransportLinesLinks[id])
 			if err != nil {
 				log.Fatalf("Scraping error: %v\n", err)
 			}
 			lineCache.set(id, v)
 			val = v
 		}
-		b := val.(*BusLineSchedule)
+		b := val.(*TransportLine)
 		renderTemplate(templates, w, "line", b)
 	})
 

@@ -4,7 +4,7 @@ import "time"
 
 // "time"
 
-type BusLineSchedule struct {
+type TransportLine struct {
 	Places []string
 	Id     string
 	Routes []route

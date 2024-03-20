@@ -1,26 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
 	"github.com/gocolly/colly/v2"
-)
-
-const (
-	vncOnceCssSel = ".vc_custom_1700841099371"
-
-	buslineLinkCssSel      = "a.vc-zone-link"
-	buslineIdCssSel        = "dim .vc_gitem-acf"
-	buslineContainerCssSel = "div.vc_gitem-zone.vc_gitem-zone-a.linija"
-
-	BusIdSpanCssSel      = "table.alignleft:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > span:nth-child(1)"
-	BusPlacesTableCssSel = "table.alignleft:nth-child(3)"
-	BusPlacesCssSel      = "table.alignleft:nth-child(3) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > div:nth-child(1) > span:nth-child(1)"
-
-	TimetableCSSSel         = "table.tablepress-initially-hidden tbody"
-	TimetableIniShownCSSSel = "table.tablepress tbody"
 )
 
 const (
@@ -46,7 +32,7 @@ const (
 	ECOBUS  publicTransportKind = "ecobus"
 )
 
-var cityIds = []cityId{BELGRADEID, NISID}
+// var cityIds = []cityId{BELGRADEID, NISID}
 
 type city struct {
 	id   cityId
@@ -55,99 +41,169 @@ type city struct {
 }
 
 type publicTransport struct {
-	kind        publicTransportKind
-	dataPostReq postReq
+	kind    publicTransportKind
+	postReq postReq
 }
 
 type postReq struct {
-	url         string
-	postReqData map[string]string
+	url               string
+	postDataScrapeUrl string
 }
 
 var bg city = city{BELGRADEID, "Beograd", []publicTransport{
 	{BUS, postReq{
 		"https://www.busevi.com/wp-admin/admin-ajax.php",
-		map[string]string{
-			"action":               "vc_get_vc_grid_data",
-			"vc_action":            "vc_get_vc_grid_data",
-			"tag":                  "vc_basic_grid",
-			"data[visible_pages]":  "5",
-			"data[page_id]":        "67518",
-			"data[style]":          "lazy",
-			"data[action]":         "vc_get_vc_grid_data",
-			"data[shortcode_id]":   "1700841575356-2d8044ea-125b-5",
-			"data[items_per_page]": "6",
-			"data[tag]":            "vc_basic_grid",
-			"vc_post_id":           "67518"}}},
+		"https://www.busevi.com/gradski-prevoz-beograd-autobuske-linije-brojevi-linija/"}},
 	{TRAM, postReq{
 		"https://www.busevi.com/wp-admin/admin-ajax.php",
-		map[string]string{
-			"action":              "vc_get_vc_grid_data",
-			"vc_action":           "vc_get_vc_grid_data",
-			"tag":                 "vc_basic_grid",
-			"data[visible_pages]": "5",
-			"data[page_id]":       "65711",
-			"data[style]":         "all",
-			"data[action]":        "vc_get_vc_grid_data",
-			"data[shortcode_id]":  "1700841327151-43306baf-a29d-3",
-			"data[tag]":           "vc_basic_grid",
-			"vc_post_id":          "65711"}}},
+		"https://www.busevi.com/gradski-prevoz-beograd-tramvajske-linije-brojevi-linija/"}},
 	{ECOBUS, postReq{
 		"https://www.busevi.com/wp-admin/admin-ajax.php",
-		map[string]string{
-			"action":              "vc_get_vc_grid_data",
-			"vc_action":           "vc_get_vc_grid_data",
-			"tag":                 "vc_basic_grid",
-			"data[visible_pages]": "5",
-			"data[page_id]":       "65722",
-			"data[style]":         "all",
-			"data[action]":        "vc_get_vc_grid_data",
-			"data[shortcode_id]":  "1700841380352-15c43a0b-6fe5-5",
-			"data[tag]":           "vc_basic_grid",
-			"vc_post_id":          "65722"}}},
+		"https://www.busevi.com/gradski-prevoz-beograd-elektro-bus-linija-brojevi-linija/"}},
 	{MINIBUS, postReq{
 		"https://www.busevi.com/wp-admin/admin-ajax.php",
-		map[string]string{
-			"action":              "vc_get_vc_grid_data",
-			"vc_action":           "vc_get_vc_grid_data",
-			"tag":                 "vc_basic_grid",
-			"data[visible_pages]": "5",
-			"data[page_id]":       "65728",
-			"data[style]":         "all",
-			"data[action]":        "vc_get_vc_grid_data",
-			"data[shortcode_id]":  "1700841409243-ebae0051-9b12-9",
-			"data[tag]":           "vc_basic_grid",
-			"vc_post_id":          "65728"}}},
+		"https://www.busevi.com/gradski-prevoz-beograd-minibus-linije-brojevi-linija/"}},
 	{TROLLEY, postReq{
 		"https://www.busevi.com/wp-admin/admin-ajax.php",
-		map[string]string{
-			"action":              "vc_get_vc_grid_data",
-			"vc_action":           "vc_get_vc_grid_data",
-			"tag":                 "vc_basic_grid",
-			"data[visible_pages]": "5",
-			"data[page_id]":       "65715",
-			"data[style]":         "all",
-			"data[action]":        "vc_get_vc_grid_data",
-			"data[shortcode_id]":  "1700841359426-29bdc697-db18-7",
-			"data[tag]":           "vc_basic_grid",
-			"vc_post_id":          "65715"}}}}}
+		"https://www.busevi.com/gradski-prevoz-beograd-trolejbuske-linije-brojevi-linija/"}}}}
 
-var ni city = city{NISID, "Niš", []publicTransport{}}
+func (pr postReq) PostData(c *colly.Collector) map[string]string {
+	const (
+		divLinesContainerCSSSel = "div.vc_grid-container.vc_clearfix.wpb_content_element.vc_basic_grid.center"
+	)
+
+	postData := map[string]string{}
+	postDataJson := struct {
+		Page_id        int    `json:"page_id,omitempty"`
+		Style          string `json:"style,omitempty"`
+		Action         string `json:"action,omitempty"`
+		Shortcode_id   string `json:"shortcode_id,omitempty"`
+		Items_per_page string `json:"items_per_page,omitempty"`
+		Tag            string `json:"tag,omitempty"`
+	}{}
+
+	found := false
+
+	c.OnHTML(divLinesContainerCSSSel, func(h *colly.HTMLElement) {
+		if found {
+			return
+		}
+		found = true
+		postDataJSONString := h.Attr("data-vc-grid-settings")
+		if err := json.Unmarshal([]byte(postDataJSONString), &postDataJson); err != nil {
+			log.Fatalf("Error unmarshaling post data: %v\n", err)
+		}
+	})
+
+	if err := c.Visit(pr.postDataScrapeUrl); err != nil {
+		log.Fatalf("Error scraping %s for post data: %v\n", pr.postDataScrapeUrl, err)
+	}
+	c.Wait()
+
+	postData["action"] = postDataJson.Action
+	postData["vc_action"] = postDataJson.Action
+	postData["tag"] = postDataJson.Tag
+	postData["data[visible_pages]"] = "5"
+	postData["data[page_id]"] = fmt.Sprint(postDataJson.Page_id)
+	postData["data[style]"] = postDataJson.Style
+	postData["data[action]"] = postDataJson.Action
+	postData["data[shortcode_id]"] = postDataJson.Shortcode_id
+	postData["data[items_per_page]"] = postDataJson.Items_per_page
+	postData["data[tag]"] = postDataJson.Tag
+	postData["vc_post_id"] = fmt.Sprint(postDataJson.Page_id)
+
+	return postData
+}
+
+//	var bg city = city{BELGRADEID, "Beograd", []publicTransport{
+//		{BUS, postReq{
+//			"https://www.busevi.com/wp-admin/admin-ajax.php",
+//			map[string]string{
+//				"action":               "vc_get_vc_grid_data",
+//				"vc_action":            "vc_get_vc_grid_data",
+//				"tag":                  "vc_basic_grid",
+//				"data[visible_pages]":  "5",
+//				"data[page_id]":        "67518",
+//				"data[style]":          "lazy",
+//				"data[action]":         "vc_get_vc_grid_data",
+//				"data[shortcode_id]":   "1700841575356-2d8044ea-125b-5",
+//				"data[items_per_page]": "6",
+//				"data[tag]":            "vc_basic_grid",
+//				"vc_post_id":           "67518"}}},
+//		{TRAM, postReq{
+//			"https://www.busevi.com/wp-admin/admin-ajax.php",
+//			map[string]string{
+//				"action":              "vc_get_vc_grid_data",
+//				"vc_action":           "vc_get_vc_grid_data",
+//				"tag":                 "vc_basic_grid",
+//				"data[visible_pages]": "5",
+//				"data[page_id]":       "65711",
+//				"data[style]":         "all",
+//				"data[action]":        "vc_get_vc_grid_data",
+//				"data[shortcode_id]":  "1700841327151-43306baf-a29d-3",
+//				"data[tag]":           "vc_basic_grid",
+//				"vc_post_id":          "65711"}}},
+//		{ECOBUS, postReq{
+//			"https://www.busevi.com/wp-admin/admin-ajax.php",
+//			map[string]string{
+//				"action":              "vc_get_vc_grid_data",
+//				"vc_action":           "vc_get_vc_grid_data",
+//				"tag":                 "vc_basic_grid",
+//				"data[visible_pages]": "5",
+//				"data[page_id]":       "65722",
+//				"data[style]":         "all",
+//				"data[action]":        "vc_get_vc_grid_data",
+//				"data[shortcode_id]":  "1700841380352-15c43a0b-6fe5-5",
+//				"data[tag]":           "vc_basic_grid",
+//				"vc_post_id":          "65722"}}},
+//		{MINIBUS, postReq{
+//			"https://www.busevi.com/wp-admin/admin-ajax.php",
+//			map[string]string{
+//				"action":              "vc_get_vc_grid_data",
+//				"vc_action":           "vc_get_vc_grid_data",
+//				"tag":                 "vc_basic_grid",
+//				"data[visible_pages]": "5",
+//				"data[page_id]":       "65728",
+//				"data[style]":         "all",
+//				"data[action]":        "vc_get_vc_grid_data",
+//				"data[shortcode_id]":  "1700841409243-ebae0051-9b12-9",
+//				"data[tag]":           "vc_basic_grid",
+//				"vc_post_id":          "65728"}}},
+//		{TROLLEY, postReq{
+//			"https://www.busevi.com/wp-admin/admin-ajax.php",
+//			map[string]string{
+//				"action":              "vc_get_vc_grid_data",
+//				"vc_action":           "vc_get_vc_grid_data",
+//				"tag":                 "vc_basic_grid",
+//				"data[visible_pages]": "5",
+//				"data[page_id]":       "65715",
+//				"data[style]":         "all",
+//				"data[action]":        "vc_get_vc_grid_data",
+//				"data[shortcode_id]":  "1700841359426-29bdc697-db18-7",
+//				"data[tag]":           "vc_basic_grid",
+//				"vc_post_id":          "65715"}}}}}
+
+// var ni city = city{NISID, "Niš", []publicTransport{}}
 
 var cities = []*city{&bg}
 
 func scrapeTransportLinesLinks() map[string]string {
+	const (
+		vncOnceCSSSel                = ".vc_custom_1700841099371"
+		transportLineContainerCSSSel = "div.vc_gitem-zone.vc_gitem-zone-a.linija"
+	)
+
 	transportLines := make(map[string]string)
 
 	c := colly.NewCollector(colly.AllowedDomains(allowedDomains...), colly.Async(true))
 	c.UserAgent = userAgent
 
-	vnconce, err := getVnconce("https://www.busevi.com", vncOnceCssSel, c.Clone())
+	vnconce, err := getVnconce("https://www.busevi.com", vncOnceCSSSel, c.Clone())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c.OnHTML(buslineContainerCssSel, func(h *colly.HTMLElement) {
+	c.OnHTML(transportLineContainerCSSSel, func(h *colly.HTMLElement) {
 		lineLink := h.ChildAttr("a", "href")
 		lineId := strings.TrimSpace(h.Text)
 		transportLines[lineId] = lineLink
@@ -156,10 +212,14 @@ func scrapeTransportLinesLinks() map[string]string {
 	for _, city := range cities {
 		for _, t := range city.t {
 			log.Printf("Scraping %s lines in %s.\n", t.kind, city.name)
-			t.dataPostReq.postReqData["_vcnonce"] = vnconce
-			err := c.Post(t.dataPostReq.url, t.dataPostReq.postReqData)
-			if err != nil {
-				log.Fatal(err)
+
+			postData := t.postReq.PostData(c.Clone())
+			postData["_vcnonce"] = vnconce
+
+			log.Printf("Post data map: %v\n", postData)
+
+			if err := c.Post(t.postReq.url, postData); err != nil {
+				log.Fatalf("Colly post request to %s with data %vf failed: %v\n", t.postReq.url, postData, err)
 			}
 			c.Wait()
 		}
@@ -170,9 +230,18 @@ func scrapeTransportLinesLinks() map[string]string {
 	return transportLines
 }
 
-func scrapeBusLine(url string) (*BusLineSchedule, error) {
+func scrapeLine(url string) (*TransportLine, error) {
 	log.Printf("Scraping line schedule from url: %s\n", url)
-	b := BusLineSchedule{}
+
+	const (
+		LineIdSpanCssSel              = "table.alignleft:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > span:nth-child(1)"
+		LinePlacesTableCssSel         = "table.alignleft:nth-child(3)"
+		LinePlacesCssSel              = "table.alignleft:nth-child(3) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > div:nth-child(1) > span:nth-child(1)"
+		TimetableCSSSel               = "table.tablepress-initially-hidden tbody"
+		TimetableInitiallyShownCSSSel = "table.tablepress tbody"
+	)
+
+	b := TransportLine{}
 	c := colly.NewCollector(colly.AllowedDomains(allowedDomains...))
 
 	timetables := []timetable{}
@@ -180,13 +249,13 @@ func scrapeBusLine(url string) (*BusLineSchedule, error) {
 	stops := [][]stop{}
 	tags := []string{}
 
-	c.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+	c.UserAgent = userAgent
 
-	c.OnHTML(BusIdSpanCssSel, func(h *colly.HTMLElement) {
+	c.OnHTML(LineIdSpanCssSel, func(h *colly.HTMLElement) {
 		b.Id = strings.TrimSpace(h.Text)
 	})
 
-	c.OnHTML(BusPlacesTableCssSel, func(h *colly.HTMLElement) {
+	c.OnHTML(LinePlacesTableCssSel, func(h *colly.HTMLElement) {
 		if b.Places != nil {
 			return
 		}
@@ -198,9 +267,9 @@ func scrapeBusLine(url string) (*BusLineSchedule, error) {
 	c.OnHTML(TimetableCSSSel, func(h *colly.HTMLElement) {
 		tt := timetable{}
 		h.ForEach("tr", func(i int, h *colly.HTMLElement) {
-			const nclmns = 4
+			const nClmns = 4
 			tr := h.ChildTexts("td")
-			if len(tr) != nclmns {
+			if len(tr) != nClmns {
 				// Table row should have 4 clmns hour, workday, saturday, sunday.
 				return
 			}
@@ -209,7 +278,7 @@ func scrapeBusLine(url string) (*BusLineSchedule, error) {
 		timetables = append(timetables, tt)
 	})
 
-	c.OnHTML(TimetableIniShownCSSSel, func(h *colly.HTMLElement) {
+	c.OnHTML(TimetableInitiallyShownCSSSel, func(h *colly.HTMLElement) {
 		tt := timetable{}
 		h.ForEach("tr", func(i int, h *colly.HTMLElement) {
 			const nclmns = 4
