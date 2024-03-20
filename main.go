@@ -83,7 +83,6 @@ func run(args []string) error {
 				matchedLines = append(matchedLines, key)
 			}
 		}
-		fmt.Println(matchedLines)
 		renderTemplate(templates, w, "home", sortStringSliceNumerically(matchedLines))
 	})
 
