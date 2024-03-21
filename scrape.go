@@ -333,6 +333,7 @@ func scrapeLine(url string) (*TransportLine, error) {
 }
 
 func parseTimelineRowFromTableRow(tr []string) row {
+	// len(tr) is 4
 	r := row{}
 	fmt.Sscanf(tr[0], "%d", &r.H)
 	r.Wd = parseMinutes(tr[1])
@@ -343,7 +344,7 @@ func parseTimelineRowFromTableRow(tr []string) row {
 
 func parseMinutes(td string) []min {
 	fs := strings.Fields(td)
-	if fs[0] == "-" {
+	if len(fs) == 0 || fs[0] == "-" {
 		return nil
 	}
 	ms := make([]min, len(fs))
