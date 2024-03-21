@@ -16,7 +16,7 @@
 {{- end}}
 {{define "content" -}}
 	<h2 style="margin-bottom:0">{{.Id}}</h2>
-	<h3 style="margin-top:0">{{index .Places 0}}{{range slice .Places 1}} → {{.}} {{end}}</h3>
+	<h3 style="margin-top:0">{{index .Places 0}}{{range slice .Places 1}} - {{.}} {{end}}</h3>
 	{{- range .Routes}}
 	<h2>{{.Tag}}→</h2>
 	<table>
