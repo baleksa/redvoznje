@@ -189,7 +189,6 @@ var cities = []*city{&bg}
 
 func scrapeTransportLinesLinks() map[string]string {
 	const (
-		vncOnceCSSSel                = ".vc_custom_1700841099371"
 		transportLineContainerCSSSel = "div.vc_gitem-zone.vc_gitem-zone-a.linija"
 	)
 
@@ -198,7 +197,7 @@ func scrapeTransportLinesLinks() map[string]string {
 	c := colly.NewCollector(colly.AllowedDomains(allowedDomains...), colly.Async(true))
 	c.UserAgent = userAgent
 
-	vnconce, err := getVnconce("https://www.busevi.com", vncOnceCSSSel, c.Clone())
+	vnconce, err := getVnconce("https://www.busevi.com", c.Clone())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -354,10 +353,14 @@ func parseMinutes(td string) []min {
 	return ms
 }
 
-func getVnconce(url string, CSSSel string, c *colly.Collector) (string, error) {
+func getVnconce(url string, c *colly.Collector) (string, error) {
+	const (
+		vncOnceCSSSel = ".vc_custom_1700841099371"
+	)
+
 	var vnconce string
 
-	c.OnHTML(CSSSel, func(h *colly.HTMLElement) {
+	c.OnHTML(vncOnceCSSSel, func(h *colly.HTMLElement) {
 		s := h.Attr("data-vc-public-nonce")
 		if s != "" {
 			vnconce = s
