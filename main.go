@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-//go:embed templates
+//go:embed templates static
 var tmplFs embed.FS
 
 func getKeysFromMap(m map[string]string) []string {
@@ -52,6 +52,9 @@ func run(args []string) error {
 	baseTmpl := template.Must(template.ParseFS(tmplFs, "templates/base/*"))
 	templates := make(map[string]*template.Template)
 	loadTemplates(tmplFs, templates, baseTmpl)
+
+	fs := http.FileServerFS(tmplFs)
+	http.Handle("/static/", fs)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		renderTemplate(templates, w, "home", sortStringSliceNumerically(getKeysFromMap(publicTransportLinesLinks)))

@@ -1,0 +1,26 @@
+/* simple.css tweaks */
+/* Light theme tweaks */
+:root, ::backdrop {
+    --bg: #FFFBEF;
+    --accent-bg: #FFEEBC;
+    --text: #454545;
+    --border: #5F5F5F;
+
+}
+details > table {
+    --accent-bg: #FFF5D6;
+}
+
+/* Dark theme tweaks */
+@media (prefers-color-scheme: dark) {
+    :root, ::backdrop {
+        color-scheme: dark;
+        --bg: #2B3339;
+        --accent-bg: #364048;
+        --text: #D3C6AA;
+    }
+    details > table {
+        background-color: var(--bg);
+        --accent-bg: #414D56;
+    }
+}
