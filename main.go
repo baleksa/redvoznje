@@ -53,20 +53,8 @@ func run(args []string) error {
 	templates := make(map[string]*template.Template)
 	loadTemplates(tmplFs, templates, baseTmpl)
 
-	http.HandleFunc("/line/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-
-		val, ok := lineCache.get(id)
-		if !ok {
-			v, err := scrapeLine(publicTransportLinesLinks[id])
-			if err != nil {
-				log.Fatalf("Scraping error: %v\n", err)
-			}
-			lineCache.set(id, v)
-			val = v
-		}
-		b := val.(*TransportLine)
-		renderTemplate(templates, w, "line", b)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		renderTemplate(templates, w, "home", sortStringSliceNumerically(getKeysFromMap(publicTransportLinesLinks)))
 	})
 
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
@@ -83,8 +71,20 @@ func run(args []string) error {
 		renderTemplate(templates, w, "home", sortStringSliceNumerically(matchedLines))
 	})
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		renderTemplate(templates, w, "home", sortStringSliceNumerically(getKeysFromMap(publicTransportLinesLinks)))
+	http.HandleFunc("/line/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		val, ok := lineCache.get(id)
+		if !ok {
+			v, err := scrapeLine(publicTransportLinesLinks[id])
+			if err != nil {
+				log.Fatalf("Scraping error: %v\n", err)
+			}
+			lineCache.set(id, v)
+			val = v
+		}
+		b := val.(*TransportLine)
+		renderTemplate(templates, w, "line", b)
 	})
 
 	flagset := flag.NewFlagSet("", flag.ExitOnError)
