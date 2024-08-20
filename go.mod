@@ -1,6 +1,6 @@
 module github.com/baleksa/redvoznje
 
-go 1.21.5
+go 1.22
 
 require github.com/gocolly/colly/v2 v2.1.0
 

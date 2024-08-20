@@ -53,12 +53,9 @@ func run(args []string) error {
 	templates := make(map[string]*template.Template)
 	loadTemplates(tmplFs, templates, baseTmpl)
 
-	http.HandleFunc("/line", func(w http.ResponseWriter, r *http.Request) {
-		id := r.URL.Query().Get("id")
-		if id == "" {
-			fmt.Fprint(w, "id parameter is needed.")
-			return
-		}
+	http.HandleFunc("/line/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
 		val, ok := lineCache.get(id)
 		if !ok {
 			v, err := scrapeLine(publicTransportLinesLinks[id])
