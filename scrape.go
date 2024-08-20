@@ -324,8 +324,12 @@ func scrapeLine(url string) (*TransportLine, error) {
 	b.Routes = make([]route, len(timetables))
 	for i := range b.Routes {
 		b.Routes[i].Timetable = timetables[i]
-		b.Routes[i].Stops = stops[i]
-		b.Routes[i].Tag = tags[i]
+		if i < len(stops) {
+			b.Routes[i].Stops = stops[i]
+		}
+		if i < len(tags) {
+			b.Routes[i].Tag = tags[i]
+		}
 	}
 
 	return &b, nil
