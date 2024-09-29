@@ -21,7 +21,12 @@
 	<p>
 	<search>
 		<form action="/search">
-			<input type="search" id="line" name="q" placeholder="npr. 23"/>
+			<input list="lines" type="search" id="line" name="q" placeholder="npr. 23" autocomplete="off"/>
+            <datalist id="lines">
+            {{range .}}
+            <option>{{.}}</option>
+            {{end}}
+            </datalist>
 			<button type="submit">Pretraži</button>
 		</form>
 	</search>
