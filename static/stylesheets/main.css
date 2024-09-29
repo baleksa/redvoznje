@@ -1,3 +1,4 @@
+
 /* simple.css tweaks */
 /* Light theme tweaks */
 :root, ::backdrop {
@@ -23,4 +24,14 @@ details > table {
         background-color: var(--bg);
         --accent-bg: #414D56;
     }
+}
+
+#full-timetable summary::marker{
+    font-size: 1.5em;
+    content: '🕐 ';
+}
+
+#stations summary::marker{
+    font-size: 1.5em;
+    content: '🚏 ';
 }
