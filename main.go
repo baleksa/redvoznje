@@ -23,11 +23,10 @@ func getKeysFromMap(m map[string]string) []string {
 	for k := range m {
 		keys = append(keys, k)
 	}
-	sortStringSliceNumerically(keys)
 	return keys
 }
 
-func sortStringSliceNumerically(s []string) []string {
+func sortLineIds(s []string) {
 	sort.Slice(s, func(i, j int) bool {
 		var xi, xj int
 		fmt.Sscanf(s[i], "%d", &xi)
@@ -39,80 +38,6 @@ func sortStringSliceNumerically(s []string) []string {
 
 		return s[i] < s[j]
 	})
-
-	return s
-}
-
-func run(args []string) error {
-
-	publicTransportLinesLinks := scrapeTransportLinesLinks()
-
-	lineCache := newCache()
-
-	baseTmpl := template.Must(template.ParseFS(tmplFs, "templates/base/*"))
-	templates := make(map[string]*template.Template)
-	loadTemplates(tmplFs, templates, baseTmpl)
-
-	fs := http.FileServerFS(tmplFs)
-	http.Handle("/static/", fs)
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		renderTemplate(templates, w, "home", sortStringSliceNumerically(getKeysFromMap(publicTransportLinesLinks)))
-	})
-
-	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Error parsing request form.", http.StatusInternalServerError)
-		}
-		q := strings.ToLower(r.Form.Get("q"))
-		matchedLines := []string{}
-		for key := range publicTransportLinesLinks {
-			if strings.Contains(strings.ToLower(key), q) {
-				matchedLines = append(matchedLines, key)
-			}
-		}
-		renderTemplate(templates, w, "home", sortStringSliceNumerically(matchedLines))
-	})
-
-	http.HandleFunc("/line/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-
-		val, ok := lineCache.get(id)
-		if !ok {
-			v, err := scrapeLine(publicTransportLinesLinks[id])
-			if err != nil {
-				log.Fatalf("Scraping error: %v\n", err)
-			}
-			lineCache.set(id, v)
-			val = v
-		}
-		b := val.(*TransportLine)
-		renderTemplate(templates, w, "line", b)
-	})
-
-	flagset := flag.NewFlagSet("", flag.ExitOnError)
-	host := flagset.String("host", "localhost", "Address to listen on.")
-	port := flagset.String("port", "8080", "Port to listen on.")
-	flagset.Usage = func() {
-		fmt.Printf("Usage: %s [flags]\n", args[0])
-		flagset.PrintDefaults()
-	}
-	_ = flagset.Parse(args[1:])
-
-	addr := net.JoinHostPort(*host, *port)
-	log.Printf("Listening on %s.\n", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func main() {
-	if err := run(os.Args); err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
 }
 
 func loadTemplates(efs embed.FS, templates map[string]*template.Template, baseTmpl *template.Template) {
@@ -145,5 +70,84 @@ func renderTemplate(templates map[string]*template.Template, w http.ResponseWrit
 	}
 	if err := t.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func routes(templates map[string]*template.Template, publicTransportLinesLinks map[string]string, lineCache *cache) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		ids := getKeysFromMap(publicTransportLinesLinks)
+		sortLineIds(ids)
+		renderTemplate(templates, w, "home", ids)
+	})
+
+	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing request form.", http.StatusInternalServerError)
+		}
+		q := strings.ToLower(r.Form.Get("q"))
+		matchedLines := []string{}
+		for key := range publicTransportLinesLinks {
+			if strings.Contains(strings.ToLower(key), q) {
+				matchedLines = append(matchedLines, key)
+			}
+		}
+		sortLineIds(matchedLines)
+		renderTemplate(templates, w, "home", matchedLines)
+	})
+
+	http.HandleFunc("/line/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		val, ok := lineCache.get(id)
+		if !ok {
+			v, err := scrapeLine(publicTransportLinesLinks[id])
+			if err != nil {
+				log.Fatalf("Scraping error: %v\n", err)
+			}
+			lineCache.set(id, v)
+			val = v
+		}
+		b := val.(*TransportLine)
+		renderTemplate(templates, w, "line", b)
+	})
+}
+
+func run(args []string) error {
+	publicTransportLinesLinks := scrapeTransportLinesLinks()
+
+	lineCache := newCache()
+
+	baseTmpl := template.Must(template.ParseFS(tmplFs, "templates/base/*"))
+	templates := make(map[string]*template.Template)
+	loadTemplates(tmplFs, templates, baseTmpl)
+
+	fs := http.FileServerFS(tmplFs)
+	http.Handle("/static/", fs)
+
+	routes(templates, publicTransportLinesLinks, lineCache)
+
+	flagset := flag.NewFlagSet("", flag.ExitOnError)
+	host := flagset.String("host", "localhost", "Address to listen on.")
+	port := flagset.String("port", "8080", "Port to listen on.")
+	flagset.Usage = func() {
+		fmt.Printf("Usage: %s [flags]\n", args[0])
+		flagset.PrintDefaults()
+	}
+	_ = flagset.Parse(args[1:])
+
+	addr := net.JoinHostPort(*host, *port)
+
+	log.Printf("Listening on %s.\n", addr)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func main() {
+	if err := run(os.Args); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
 	}
 }
