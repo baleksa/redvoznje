@@ -46,7 +46,7 @@
 		{{- end}}
 		</tbody>
 	</table>
-	<details>
+	<details id="full-timetable">
 	<summary>Kompletan red vožnje</summary>
 	<table>
 		<caption>{{.Tag}}</caption>
@@ -70,8 +70,8 @@
 		</tbody>
 	</table>
 	</details>
-	<details>
-	<summary>Stanice</summary>
+	<details id="stations">
+	<summary >Stanice</summary>
 	<ol>
 		{{- range .Stops}}
 		<li>{{.Zone}} {{.Id}} {{.Name}}</li>
